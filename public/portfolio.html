@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Портфолио проектов</h1>
+                <p>Работы, которыми мы гордимся</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="grid-3" id="portfolioGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Загружаем проекты только один раз
+        async function loadProjects() {
+            try {
+                const response = await fetch('/api/projects');
+                const data = await response.json();
+                const grid = document.getElementById('portfolioGrid');
+                
+                // Очищаем перед заполнением
+                grid.innerHTML = '';
+                
+                if (data.projects && data.projects.length > 0) {
+                    grid.innerHTML = data.projects.map(p => `
+                        <div class="card">
+                            <img src="${p.image_url}" alt="${p.title}" class="card-image">
+                            <div class="card-content">
+                                <h3>${p.title}</h3>
+                                <p>${p.room_type} | ${p.area} м² | ${p.style}</p>
+                                <p>Год: ${p.year_completed}</p>
+                                <a href="/project-card.html?id=${p.id}" class="btn-small">Смотреть проект</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки проектов:', error);
+                document.getElementById('portfolioGrid').innerHTML = '<p style="color: #666;">Не удалось загрузить проекты.</p>';
+            }
+        }
+
+        // Вызываем один раз
+        loadProjects();
+    </script>
+</body>
+</html>

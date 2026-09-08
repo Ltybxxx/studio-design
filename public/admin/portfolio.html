@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Портфолио - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Портфолио проектов</h1>
+                <p>Работы, которыми мы гордимся</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <!-- Фильтры -->
+                <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap;">
+                    <button class="btn btn-primary filter-btn active" data-filter="all" onclick="filterProjects('all')">Все проекты</button>
+                    <button class="btn btn-outline filter-btn" data-filter="Квартира" onclick="filterProjects('Квартира')">Квартиры</button>
+                    <button class="btn btn-outline filter-btn" data-filter="Дом" onclick="filterProjects('Дом')">Дома</button>
+                    <button class="btn btn-outline filter-btn" data-filter="Коммерческое помещение" onclick="filterProjects('Коммерческое помещение')">Коммерческие помещения</button>
+                </div>
+                
+                <div class="grid-3" id="portfolioGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        let allProjects = [];
+        
+        async function loadProjects() {
+            const response = await fetch('/api/projects');
+            const data = await response.json();
+            
+            allProjects = data.projects;
+            displayProjects(allProjects);
+        }
+        
+        function displayProjects(projects) {
+            const grid = document.getElementById('portfolioGrid');
+            
+            if (projects.length === 0) {
+                grid.innerHTML = '<p style="color: #666; text-align: center;">Проекты не найдены.</p>';
+                return;
+            }
+            
+            grid.innerHTML = projects.map(p => `
+                <div class="card">
+                    <img src="${p.image_url}" alt="${p.title}" class="card-image">
+                    <div class="card-content">
+                        <h3>${p.title}</h3>
+                        <p>${p.room_type} | ${p.area} м² | ${p.style}</p>
+                        <p>Год: ${p.year_completed}</p>
+                        <a href="/project-card.html?id=${p.id}" class="btn-small">Смотреть проект</a>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function filterProjects(filter) {
+            // Обновляем активную кнопку
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.classList.remove('btn-primary');
+                btn.classList.add('btn-outline');
+            });
+            
+            const activeBtn = document.querySelector(`[data-filter="${filter}"]`);
+            if (activeBtn) {
+                activeBtn.classList.add('active');
+                activeBtn.classList.add('btn-primary');
+                activeBtn.classList.remove('btn-outline');
+            }
+            
+            if (filter === 'all') {
+                displayProjects(allProjects);
+            } else {
+                const filtered = allProjects.filter(p => p.room_type === filter);
+                displayProjects(filtered);
+            }
+        }
+        
+        loadProjects();
+    </script>
+</body>
+</html>

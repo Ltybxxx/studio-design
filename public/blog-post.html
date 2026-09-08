@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статья - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1 id="postTitle">Загрузка...</h1>
+                <p id="postDate"></p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div id="postContent" style="max-width: 800px; margin: 0 auto;">
+                    <p style="color: #666; text-align: center;">Загрузка статьи...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        async function loadBlogPost() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const postId = urlParams.get('id');
+            
+            if (!postId) {
+                document.getElementById('postContent').innerHTML = '<p style="color: #666;">Статья не найдена.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/blog');
+                const data = await response.json();
+                
+                if (!data.success || !data.posts) {
+                    return;
+                }
+                
+                const post = data.posts.find(p => p.id === parseInt(postId));
+                
+                if (!post) {
+                    document.getElementById('postContent').innerHTML = '<p style="color: #666;">Статья не найдена.</p>';
+                    return;
+                }
+                
+                document.getElementById('postTitle').textContent = post.title;
+                document.getElementById('postDate').textContent = new Date(post.created_at).toLocaleDateString('ru-RU');
+                
+                document.getElementById('postContent').innerHTML = `
+                    <img src="${post.image_url}" alt="${post.title}" style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 32px;">
+                    <div style="background: white; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); padding: 32px;">
+                        <p style="color: #666; line-height: 1.8;">${post.content}</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Ошибка загрузки статьи:', error);
+            }
+        }
+        
+        loadBlogPost();
+    </script>
+</body>
+</html>

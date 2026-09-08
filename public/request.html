@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Онлайн-заявка - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Онлайн-заявка</h1>
+                <p>Заполните форму, и мы свяжемся с вами для обсуждения проекта</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <div class="alert alert-error" id="errorAlert" style="display: none;">
+                        <ul id="errorList"></ul>
+                    </div>
+                    
+                    <div class="alert alert-success" id="successAlert" style="display: none;">
+                        Заявка успешно отправлена!
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-content" style="padding: 32px;">
+                            <form id="requestForm">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Имя *</label>
+                                        <input type="text" id="requestName" required placeholder="Ваше имя" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Телефон *</label>
+                                        <input type="tel" id="requestPhone" required placeholder="+7 (___) ___-__-__" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email</label>
+                                    <input type="email" id="requestEmail" placeholder="example@mail.ru" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Тип помещения</label>
+                                        <select id="requestRoomType" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                            <option value="">Выберите тип</option>
+                                            <option value="Квартира">Квартира</option>
+                                            <option value="Дом">Дом</option>
+                                            <option value="Коммерческое помещение">Коммерческое помещение</option>
+                                            <option value="Другое">Другое</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Площадь (м²)</label>
+                                        <input type="number" id="requestArea" placeholder="Например: 65" min="1" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                    </div>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Выбор услуги</label>
+                                        <select id="requestService" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                            <option value="">Выберите услугу</option>
+                                            <option value="Дизайн-проект">Дизайн-проект</option>
+                                            <option value="3D-визуализация">3D-визуализация</option>
+                                            <option value="Декорирование">Декорирование</option>
+                                            <option value="Консультация">Консультация</option>
+                                            <option value="Авторский надзор">Авторский надзор</option>
+                                            <option value="Планировочное решение">Планировочное решение</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style="display: block; margin-bottom: 8px; font-weight: 500;">Бюджет проекта</label>
+                                        <select id="requestBudget" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                            <option value="">Выберите бюджет</option>
+                                            <option value="Эконом">Эконом (до 500 000 руб.)</option>
+                                            <option value="Стандарт">Стандарт (500 000 - 1 500 000 руб.)</option>
+                                            <option value="Премиум">Премиум (от 1 500 000 руб.)</option>
+                                            <option value="Не определился">Пока не определился</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">Комментарий</label>
+                                    <textarea id="requestComment" rows="5" placeholder="Опишите ваши пожелания..." style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px; resize: vertical;"></textarea>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 17px;">Отправить заявку</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Автозаполнение данных пользователя при загрузке
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/user');
+                const data = await response.json();
+                
+                if (data.success && data.user) {
+                    document.getElementById('requestName').value = data.user.name || '';
+                    document.getElementById('requestPhone').value = data.user.phone || '';
+                    document.getElementById('requestEmail').value = data.user.email || '';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки данных пользователя:', error);
+            }
+        });
+
+        // Обработка отправки формы
+        document.getElementById('requestForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const errorAlert = document.getElementById('errorAlert');
+            const errorList = document.getElementById('errorList');
+            const successAlert = document.getElementById('successAlert');
+            
+            errorAlert.style.display = 'none';
+            successAlert.style.display = 'none';
+            errorList.innerHTML = '';
+
+            const name = document.getElementById('requestName').value.trim();
+            const phone = document.getElementById('requestPhone').value.trim();
+            const email = document.getElementById('requestEmail').value.trim();
+            const roomType = document.getElementById('requestRoomType').value;
+            const area = document.getElementById('requestArea').value;
+            const serviceType = document.getElementById('requestService').value;
+            const budget = document.getElementById('requestBudget').value;
+            const comment = document.getElementById('requestComment').value.trim();
+
+            const errors = [];
+            
+            if (!name) errors.push('Имя обязательно для заполнения.');
+            if (!phone) errors.push('Телефон обязателен для заполнения.');
+
+            if (errors.length > 0) {
+                errorAlert.style.display = 'block';
+                errors.forEach(function(error) {
+                    const li = document.createElement('li');
+                    li.textContent = error;
+                    errorList.appendChild(li);
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/requests', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: phone,
+                        email: email,
+                        roomType: roomType,
+                        area: area ? parseFloat(area) : null,
+                        serviceType: serviceType,
+                        budget: budget,
+                        comment: comment
+                    })
+                });
+                
+                const data = await response.json();
+
+                if (data.success) {
+                    successAlert.style.display = 'block';
+                    document.getElementById('requestForm').reset();
+                    
+                    // Автозаполняем данные пользователя снова
+                    const userResponse = await fetch('/api/user');
+                    const userData = await userResponse.json();
+                    
+                    if (userData.success && userData.user) {
+                        document.getElementById('requestName').value = userData.user.name || '';
+                        document.getElementById('requestPhone').value = userData.user.phone || '';
+                        document.getElementById('requestEmail').value = userData.user.email || '';
+                    }
+                } else {
+                    errorAlert.style.display = 'block';
+                    const li = document.createElement('li');
+                    li.textContent = data.message;
+                    errorList.appendChild(li);
+                }
+            } catch (error) {
+                console.error('Ошибка отправки заявки:', error);
+                errorAlert.style.display = 'block';
+                const li = document.createElement('li');
+                li.textContent = 'Ошибка соединения с сервером.';
+                errorList.appendChild(li);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Личный кабинет - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+        
+        .modal-close:hover {
+            color: #C27B5C;
+        }
+        
+        .request-item {
+            border: 1px solid #E0E0E0;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .request-item:hover {
+            border-color: #C27B5C;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .btn-delete {
+            background: #FDE8E8;
+            color: #C62828;
+            border: 1px solid #F5C6C6;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .btn-delete:hover {
+            background: #C62828;
+            color: white;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+        
+        .status-new {
+            background: #E3F2FD;
+            color: #1565C0;
+        }
+        
+        .status-processing {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+        
+        .status-completed {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+        
+        .status-cancelled {
+            background: #FBE9E7;
+            color: #D32F2F;
+        }
+        
+        .service-info {
+            background: #F5F0E8;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .service-info img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Личный кабинет</h1>
+                <p id="welcomeMessage">Добро пожаловать!</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div style="max-width: 800px; margin: 0 auto;">
+                    <div class="alert alert-success" id="alertSuccess" style="display: none;">
+                        Данные успешно обновлены.
+                    </div>
+                    
+                    <div class="alert alert-error" id="alertError" style="display: none;"></div>
+                    
+                    <div class="card" style="margin-bottom: 24px;">
+                        <div class="card-content" style="padding: 32px;">
+                            <h2>Личные данные</h2>
+                            <form id="profileForm">
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Имя</label>
+                                    <input type="text" id="profileName" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                </div>
+                                <div style="margin-bottom: 16px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Email</label>
+                                    <input type="email" id="profileEmail" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                </div>
+                                <div style="margin-bottom: 20px;">
+                                    <label style="display: block; margin-bottom: 6px; font-weight: 500;">Телефон</label>
+                                    <input type="tel" id="profilePhone" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                                </div>
+                                <button type="submit" class="btn btn-primary">Сохранить</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-content" style="padding: 32px;">
+                            <h2>Мои заявки</h2>
+                            <div id="requestsList"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Модальное окно для просмотра заявки -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 id="modalTitle">Заявка</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent"></div>
+        </div>
+    </div>
+
+    <script src="/js/main.js"></script>
+    <script>
+        let currentRequests = [];
+        
+        document.addEventListener('DOMContentLoaded', async function() {
+            const response = await fetch('/api/user');
+            const data = await response.json();
+            
+            if (!data.success) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const user = data.user;
+            
+            document.getElementById('welcomeMessage').textContent = `Добро пожаловать, ${user.name}!`;
+            document.getElementById('profileName').value = user.name;
+            document.getElementById('profileEmail').value = user.email;
+            document.getElementById('profilePhone').value = user.phone || '';
+            
+            loadRequests();
+            
+            document.getElementById('profileForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('profileName').value;
+                const email = document.getElementById('profileEmail').value;
+                const phone = document.getElementById('profilePhone').value;
+                
+                const updateResponse = await fetch('/api/user', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone })
+                });
+                
+                const updateData = await updateResponse.json();
+                
+                if (updateData.success) {
+                    document.getElementById('alertSuccess').style.display = 'block';
+                    document.getElementById('welcomeMessage').textContent = `Добро пожаловать, ${name}!`;
+                } else {
+                    document.getElementById('alertError').style.display = 'block';
+                    document.getElementById('alertError').textContent = updateData.message;
+                }
+            });
+        });
+        
+        async function loadRequests() {
+            const response = await fetch('/api/requests');
+            const data = await response.json();
+            
+            currentRequests = data.requests || [];
+            
+            const requestsList = document.getElementById('requestsList');
+            
+            if (currentRequests.length === 0) {
+                requestsList.innerHTML = '<p style="color: #666;">У вас пока нет заявок.</p>';
+                return;
+            }
+            
+            const statusLabels = {
+                'new': 'Новая',
+                'processing': 'В обработке',
+                'awaiting': 'Ожидает уточнения',
+                'accepted': 'Принята',
+                'completed': 'Завершена',
+                'cancelled': 'Отменена'
+            };
+            
+            requestsList.innerHTML = currentRequests.map(r => `
+                <div class="request-item" onclick="openRequest(${r.id})">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p><strong>Заявка #${r.id}</strong></p>
+                            <p style="color: #666;">${r.service_type || 'Услуга не указана'}</p>
+                            <p style="color: #666; font-size: 14px;">${new Date(r.created_at).toLocaleDateString('ru-RU')}</p>
+                        </div>
+                        <div style="text-align: right;">
+                            <span class="status-badge status-${r.status}">${statusLabels[r.status] || r.status}</span>
+                            <br>
+                            <button class="btn-delete" onclick="event.stopPropagation(); deleteRequest(${r.id})" style="margin-top: 8px;">Удалить</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function openRequest(requestId) {
+            const response = await fetch(`/api/requests/${requestId}`);
+            const data = await response.json();
+            
+            if (!data.success) {
+                alert(data.message || 'Ошибка загрузки заявки.');
+                return;
+            }
+            
+            const request = data.request;
+            const service = data.service;
+            
+            const statusLabels = {
+                'new': 'Новая',
+                'processing': 'В обработке',
+                'awaiting': 'Ожидает уточнения',
+                'accepted': 'Принята',
+                'completed': 'Завершена',
+                'cancelled': 'Отменена'
+            };
+            
+            document.getElementById('modalTitle').textContent = `Заявка #${request.id}`;
+            
+            document.getElementById('modalContent').innerHTML = `
+                <div style="margin-bottom: 16px;">
+                    <span class="status-badge status-${request.status}">${statusLabels[request.status] || request.status}</span>
+                </div>
+                
+                <div style="margin-bottom: 16px;">
+                    <p><strong>Дата:</strong> ${new Date(request.created_at).toLocaleString('ru-RU')}</p>
+                    <p><strong>Имя:</strong> ${request.name}</p>
+                    <p><strong>Телефон:</strong> ${request.phone}</p>
+                    <p><strong>Email:</strong> ${request.email || 'Не указан'}</p>
+                    <p><strong>Тип помещения:</strong> ${request.room_type || 'Не указан'}</p>
+                    <p><strong>Площадь:</strong> ${request.area ? request.area + ' м²' : 'Не указана'}</p>
+                    <p><strong>Бюджет:</strong> ${request.budget || 'Не указан'}</p>
+                </div>
+                
+                ${service ? `
+                    <div class="service-info">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">${service.title}</h3>
+                        <img src="${service.image_url}" alt="${service.title}">
+                        <p style="color: #666;">${service.description}</p>
+                        <p style="color: #C27B5C; font-weight: 700;">от ${service.price_from} руб.</p>
+                    </div>
+                ` : ''}
+                
+                ${request.comment ? `
+                    <div style="margin-bottom: 16px;">
+                        <h3 style="font-size: 18px; margin-bottom: 8px;">Комментарий</h3>
+                        <p style="color: #666;">${request.comment}</p>
+                    </div>
+                ` : ''}
+                
+                <div style="text-align: center; margin-top: 20px;">
+                    <button class="btn-delete" onclick="deleteRequestFromModal(${request.id})" style="padding: 10px 24px; font-size: 15px;">Удалить заявку</button>
+                </div>
+            `;
+            
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+        
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+        
+        async function deleteRequest(requestId) {
+            if (!confirm('Вы уверены, что хотите удалить эту заявку?')) {
+                return;
+            }
+            
+            const response = await fetch(`/api/requests/${requestId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Заявка удалена.');
+                loadRequests();
+            } else {
+                alert(data.message || 'Ошибка удаления заявки.');
+            }
+        }
+        
+        async function deleteRequestFromModal(requestId) {
+            closeModal();
+            await deleteRequest(requestId);
+        }
+        
+        // Закрытие модального окна при клике на фон
+        document.getElementById('modalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

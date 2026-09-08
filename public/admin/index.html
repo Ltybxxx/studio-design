@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Вход в админ-панель - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section style="min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px;">
+            <div style="max-width: 480px; width: 100%;">
+                <h1 style="text-align: center;">Админ-панель</h1>
+                <p style="text-align: center; color: #666; margin-bottom: 24px;">Вход для администратора</p>
+                
+                <div class="alert alert-info">
+                    <p><strong>Данные администратора:</strong></p>
+                    <p>Email: admin@interiorstudio.ru</p>
+                    <p>Пароль: admin123</p>
+                </div>
+                
+                <div class="alert alert-error" id="errorAlert" style="display: none;">
+                    <ul id="errorList"></ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-content" style="padding: 32px;">
+                        <form id="adminLoginForm">
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Email</label>
+                                <input type="email" id="adminEmail" required placeholder="admin@interiorstudio.ru" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            <div style="margin-bottom: 20px;">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 500;">Пароль</label>
+                                <input type="password" id="adminPassword" required placeholder="Введите пароль" style="width: 100%; padding: 12px; border: 1px solid #E0E0E0; border-radius: 8px; font-size: 16px;">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">Войти</button>
+                        </form>
+                        <p style="text-align: center; margin-top: 20px;">
+                            <a href="/index.html" style="color: #C27B5C;">Вернуться на сайт</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.getElementById('adminLoginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const errorAlert = document.getElementById('errorAlert');
+            const errorList = document.getElementById('errorList');
+            errorAlert.style.display = 'none';
+            errorList.innerHTML = '';
+
+            const email = document.getElementById('adminEmail').value.trim();
+            const password = document.getElementById('adminPassword').value;
+
+            const response = await fetch('/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            
+            const data = await response.json();
+
+            if (data.success && data.user.role === 'admin') {
+                window.location.href = '/admin/dashboard.html';
+            } else if (data.success && data.user.role !== 'admin') {
+                errorAlert.style.display = 'block';
+                const li = document.createElement('li');
+                li.textContent = 'У вас нет прав администратора.';
+                errorList.appendChild(li);
+            } else {
+                errorAlert.style.display = 'block';
+                const li = document.createElement('li');
+                li.textContent = data.message;
+                errorList.appendChild(li);
+            }
+        });
+    </script>
+</body>
+</html>

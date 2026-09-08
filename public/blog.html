@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Блог - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Блог</h1>
+                <p>Советы по интерьеру, тренды дизайна и полезные статьи</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="grid-3" id="blogGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        async function loadBlogPosts() {
+            try {
+                const response = await fetch('/api/blog');
+                const data = await response.json();
+                const grid = document.getElementById('blogGrid');
+                
+                grid.innerHTML = '';
+                
+                if (data.posts && data.posts.length > 0) {
+                    grid.innerHTML = data.posts.map(post => `
+                        <div class="card">
+                            <img src="${post.image_url}" alt="${post.title}" class="card-image">
+                            <div class="card-content">
+                                <h3>${post.title}</h3>
+                                <p>${post.content.substring(0, 100)}...</p>
+                                <a href="/blog-post.html?id=${post.id}" class="btn-small">Читать далее</a>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    grid.innerHTML = '<p style="color: #666;">Статьи скоро появятся.</p>';
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки блога:', error);
+                document.getElementById('blogGrid').innerHTML = '<p style="color: #666;">Не удалось загрузить статьи.</p>';
+            }
+        }
+
+        loadBlogPosts();
+    </script>
+</body>
+</html>

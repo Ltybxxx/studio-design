@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Проект - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <style>
+        .gallery-main {
+            margin-bottom: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        
+        .gallery-main img {
+            width: 100%;
+            height: 500px;
+            object-fit: cover;
+            display: block;
+        }
+        
+        .gallery-thumbnails {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+        
+        .gallery-thumbnail {
+            width: 120px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .gallery-thumbnail:hover,
+        .gallery-thumbnail.active {
+            border-color: #C27B5C;
+        }
+        
+        .btn-wide {
+            display: inline-block;
+            padding: 16px 48px;
+            font-size: 18px;
+            background-color: #C27B5C;
+            color: white;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            text-decoration: none;
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .btn-wide:hover {
+            background-color: #A86548;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(194, 123, 92, 0.3);
+        }
+        
+        .info-block {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            padding: 32px;
+            margin-bottom: 24px;
+        }
+        
+        .info-block h2 {
+            font-size: 24px;
+            margin-bottom: 16px;
+            color: #2C2C2C;
+        }
+        
+        .info-block p {
+            color: #666;
+            line-height: 1.8;
+            margin-bottom: 0;
+        }
+        
+        .project-meta {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+        
+        .project-meta span {
+            background: #F5F0E8;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            color: #4A4A4A;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1 id="projectTitle">Загрузка...</h1>
+                <p id="projectMeta"></p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div id="projectContent" style="max-width: 800px; margin: 0 auto;">
+                    <p style="color: #666; text-align: center;">Загрузка проекта...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        async function loadProject() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('id');
+            
+            if (!projectId) {
+                document.getElementById('projectContent').innerHTML = '<p style="color: #666; text-align: center;">Проект не найден.</p>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/projects/${projectId}`);
+                const data = await response.json();
+                
+                if (!data.success || !data.project) {
+                    document.getElementById('projectContent').innerHTML = '<p style="color: #666; text-align: center;">Проект не найден.</p>';
+                    return;
+                }
+                
+                const project = data.project;
+                
+                document.getElementById('projectTitle').textContent = project.title;
+                document.getElementById('projectMeta').textContent = 
+                    `${project.room_type} | ${project.area} м² | ${project.style} | ${project.year_completed} год`;
+                
+                // Парсим галерею
+                let galleryImages = [];
+                try {
+                    galleryImages = JSON.parse(project.gallery || '[]');
+                } catch (e) {
+                    galleryImages = [project.image_url];
+                }
+                
+                if (galleryImages.length === 0) {
+                    galleryImages = [project.image_url];
+                }
+                
+                // Создаём галерею
+                const galleryHTML = `
+                    <div class="gallery-main">
+                        <img src="${galleryImages[0]}" alt="${project.title}" id="mainGalleryImage">
+                    </div>
+                    <div class="gallery-thumbnails" id="galleryThumbnails">
+                        ${galleryImages.map((img, index) => `
+                            <img src="${img}" alt="${project.title} - фото ${index + 1}" 
+                                 class="gallery-thumbnail ${index === 0 ? 'active' : ''}"
+                                 onclick="changeImage(this)" 
+                                 data-full="${img}">
+                        `).join('')}
+                    </div>
+                `;
+                
+                document.getElementById('projectContent').innerHTML = `
+                    ${galleryHTML}
+                    
+                    <div class="project-meta" style="margin-top: 24px;">
+                        <span>Тип: ${project.room_type}</span>
+                        <span>Площадь: ${project.area} м²</span>
+                        <span>Стиль: ${project.style}</span>
+                        <span>Год: ${project.year_completed}</span>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h2>Описание проекта</h2>
+                        <p>${project.description}</p>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h2>Задача клиента</h2>
+                        <p>${project.client_task || 'Информация не предоставлена.'}</p>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h2>Реализованное решение</h2>
+                        <p>${project.solution || 'Информация не предоставлена.'}</p>
+                    </div>
+                    
+                    <div class="info-block">
+                        <h2>Выполненные работы</h2>
+                        <p>${project.work_done || 'Информация не предоставлена.'}</p>
+                    </div>
+                    
+                    <div style="text-align: center; margin-top: 32px;">
+                        <a href="/request.html" class="btn-wide">Хочу похожий проект</a>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Ошибка загрузки проекта:', error);
+                document.getElementById('projectContent').innerHTML = '<p style="color: #666; text-align: center;">Ошибка загрузки проекта.</p>';
+            }
+        }
+        
+        // Функция смены изображения в галерее
+        function changeImage(thumbnail) {
+            const mainImage = document.getElementById('mainGalleryImage');
+            if (mainImage) {
+                mainImage.src = thumbnail.getAttribute('data-full');
+            }
+            
+            // Обновляем активный класс
+            document.querySelectorAll('.gallery-thumbnail').forEach(t => {
+                t.classList.remove('active');
+            });
+            thumbnail.classList.add('active');
+        }
+        
+        loadProject();
+    </script>
+</body>
+</html>

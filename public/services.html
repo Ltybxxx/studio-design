@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Услуги - InteriorStudio</title>
+    <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+    <main>
+        <section class="page-header">
+            <div class="container">
+                <h1>Наши услуги</h1>
+                <p>Полный спектр услуг в сфере интерьерного дизайна</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="container">
+                <div class="grid-3" id="servicesGrid"></div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/js/main.js"></script>
+    <script>
+        // Загружаем услуги только один раз
+        async function loadServices() {
+            try {
+                const response = await fetch('/api/services');
+                const data = await response.json();
+                const grid = document.getElementById('servicesGrid');
+                
+                // Очищаем перед заполнением
+                grid.innerHTML = '';
+                
+                if (data.services && data.services.length > 0) {
+                    grid.innerHTML = data.services.map(s => `
+                        <div class="card">
+                            <img src="${s.image_url}" alt="${s.title}" class="card-image">
+                            <div class="card-content">
+                                <h3>${s.title}</h3>
+                                <p>${s.description}</p>
+                                <p style="color: #C27B5C; font-weight: 700;">от ${s.price_from} руб.</p>
+                                <a href="/request.html" class="btn-small">Заказать</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Ошибка загрузки услуг:', error);
+                document.getElementById('servicesGrid').innerHTML = '<p style="color: #666;">Не удалось загрузить услуги.</p>';
+            }
+        }
+
+        // Вызываем один раз
+        loadServices();
+    </script>
+</body>
+</html>
